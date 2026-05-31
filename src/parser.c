@@ -6,7 +6,7 @@
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 #endif
 
-#define LANGUAGE_VERSION 15
+#define LANGUAGE_VERSION 14
 #define STATE_COUNT 2059
 #define LARGE_STATE_COUNT 251
 #define SYMBOL_COUNT 202
@@ -17,7 +17,7 @@
 #define MAX_ALIAS_SEQUENCE_LENGTH 11
 #define MAX_RESERVED_WORD_SET_SIZE 0
 #define PRODUCTION_ID_COUNT 139
-#define SUPERTYPE_COUNT 3
+#define SUPERTYPE_COUNT 0
 
 enum ts_symbol_identifiers {
   sym_identifier = 1,
@@ -4325,88 +4325,6 @@ static const TSStateId ts_primary_state_ids[STATE_COUNT] = {
   [2058] = 1892,
 };
 
-static const TSSymbol ts_supertype_symbols[SUPERTYPE_COUNT] = {
-  sym_expression,
-  sym_statement,
-  sym_type,
-};
-
-static const TSMapSlice ts_supertype_map_slices[] = {
-  [sym_expression] = {.index = 0, .length = 28},
-  [sym_statement] = {.index = 28, .length = 17},
-  [sym_type] = {.index = 45, .length = 19},
-};
-
-static const TSSymbol ts_supertype_map_entries[] = {
-  [0] =
-    sym_array_literal,
-    sym_binary_expression,
-    sym_boolean_literal,
-    sym_bracket_composite_literal,
-    sym_byte_literal,
-    sym_call_expression,
-    sym_cast_expression,
-    sym_catch_expression,
-    sym_char_literal,
-    sym_composite_literal,
-    sym_error_propagate_expression,
-    sym_generic_call_expression,
-    sym_identifier,
-    sym_index_expression,
-    sym_inferred_composite_literal,
-    sym_lambda_expression,
-    sym_match_expression,
-    sym_none_literal,
-    sym_number_literal,
-    sym_parenthesized_expression,
-    sym_postfix_expression,
-    sym_prefix_expression,
-    sym_range_expression,
-    sym_scoped_identifier,
-    sym_selector_expression,
-    sym_spread_expression,
-    sym_string_literal,
-    sym_typed_composite_literal,
-  [28] =
-    sym_assignment_statement,
-    sym_block,
-    sym_break_statement,
-    sym_const_statement,
-    sym_continue_statement,
-    sym_defer_statement,
-    sym_expression_statement,
-    sym_for_statement,
-    sym_if_statement,
-    sym_labeled_statement,
-    sym_let_statement,
-    sym_lock_statement,
-    sym_panic_statement,
-    sym_release_statement,
-    sym_return_statement,
-    sym_unsafe_statement,
-    sym_while_statement,
-  [45] =
-    sym_approx_type,
-    sym_array_type,
-    sym_enum_type,
-    sym_error_type,
-    sym_error_union_type,
-    sym_function_type,
-    sym_generic_type,
-    sym_interface_type,
-    sym_map_type,
-    sym_named_type,
-    sym_optional_type,
-    sym_pointer_type,
-    sym_raw_pointer_type,
-    sym_ref_type,
-    sym_slice_type,
-    sym_struct_type,
-    sym_tuple_type,
-    sym_union_type,
-    sym_variadic_type,
-};
-
 static bool ts_lex(TSLexer *lexer, TSStateId state) {
   START_LEXER();
   eof = lexer->eof(lexer);
@@ -5444,7 +5362,7 @@ static bool ts_lex_keywords(TSLexer *lexer, TSStateId state) {
   }
 }
 
-static const TSLexerMode ts_lex_modes[STATE_COUNT] = {
+static const TSLexMode ts_lex_modes[STATE_COUNT] = {
   [0] = {.lex_state = 0},
   [1] = {.lex_state = 22},
   [2] = {.lex_state = 0},
@@ -99787,7 +99705,7 @@ extern "C" {
 #define TS_PUBLIC __attribute__((visibility("default")))
 #endif
 
-TS_PUBLIC const TSLanguage *tree_sitter(void) {
+TS_PUBLIC const TSLanguage *tree_sitter_ember(void) {
   static const TSLanguage language = {
     .abi_version = LANGUAGE_VERSION,
     .symbol_count = SYMBOL_COUNT,
@@ -99797,7 +99715,6 @@ TS_PUBLIC const TSLanguage *tree_sitter(void) {
     .state_count = STATE_COUNT,
     .large_state_count = LARGE_STATE_COUNT,
     .production_id_count = PRODUCTION_ID_COUNT,
-    .supertype_count = SUPERTYPE_COUNT,
     .field_count = FIELD_COUNT,
     .max_alias_sequence_length = MAX_ALIAS_SEQUENCE_LENGTH,
     .parse_table = &ts_parse_table[0][0],
@@ -99808,9 +99725,6 @@ TS_PUBLIC const TSLanguage *tree_sitter(void) {
     .field_names = ts_field_names,
     .field_map_slices = ts_field_map_slices,
     .field_map_entries = ts_field_map_entries,
-    .supertype_map_slices = ts_supertype_map_slices,
-    .supertype_map_entries = ts_supertype_map_entries,
-    .supertype_symbols = ts_supertype_symbols,
     .symbol_metadata = ts_symbol_metadata,
     .public_symbol_map = ts_symbol_map,
     .alias_map = ts_non_terminal_alias_map,
@@ -99820,13 +99734,6 @@ TS_PUBLIC const TSLanguage *tree_sitter(void) {
     .keyword_lex_fn = ts_lex_keywords,
     .keyword_capture_token = sym_identifier,
     .primary_state_ids = ts_primary_state_ids,
-    .name = "ember",
-    .max_reserved_word_set_size = 0,
-    .metadata = {
-      .major_version = 0,
-      .minor_version = 1,
-      .patch_version = 0,
-    },
   };
   return &language;
 }
