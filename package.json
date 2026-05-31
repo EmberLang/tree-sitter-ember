@@ -44,6 +44,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Ember-Language/tree-sitter-ember.git"
+    "url": "https://github.com/EmberLang/tree-sitter-ember.git"
   }
 }

@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 keywords = ["incremental", "parsing", "tree-sitter", "ember"]
 categories = ["parser-implementations", "parsing", "text-editors"]
-repository = "https://github.com/Ember-Language/tree-sitter-ember"
+repository = "https://github.com/EmberLang/tree-sitter-ember"
 edition = "2021"
 autoexamples = false
 
