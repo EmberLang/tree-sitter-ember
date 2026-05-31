@@ -22,7 +22,7 @@
     {
       "scope": "source.ember",
       "file-types": [
-        "fer"
+        "em"
       ],
       "injection-regex": "^ember$",
       "highlights": [

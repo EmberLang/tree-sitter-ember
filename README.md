@@ -26,7 +26,7 @@ This grammar targets the new Ember syntax in this repo, not the older Ember comp
 
 ## File extension
 
-The grammar is configured for `.fer` files.
+The grammar is configured for `.em` files.
 
 ## Development
 
