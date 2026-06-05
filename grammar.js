@@ -21,7 +21,7 @@ const FLOAT_NUMBER =
 const IMAG_NUMBER =
   /[0-9](?:[0-9]|_[0-9])*(?:\.[0-9](?:[0-9]|_[0-9])*)?(?:[eE][+-]?[0-9](?:[0-9]|_[0-9])*)?i/;
 
-module.exports = grammar({
+export default grammar({
   name: "ember",
 
   word: ($) => $.identifier,
@@ -44,7 +44,6 @@ module.exports = grammar({
     [$.type_parameter, $.named_type],
     [$.generic_call_expression, $.binary_expression],
     [$.generic_call_expression, $.prefix_expression, $.binary_expression],
-    [$.expression_statement, $.composite_item],
   ],
 
   rules: {
@@ -55,8 +54,10 @@ module.exports = grammar({
         $.import_declaration,
         seq(repeat(field("attribute", $.attribute)), $.let_declaration),
         seq(repeat(field("attribute", $.attribute)), $.const_declaration),
-        seq(repeat(field("attribute", $.attribute)), $.type_declaration),
-        seq(repeat(field("attribute", $.attribute)), $.test_declaration),
+        seq(repeat(field("attribute", $.attribute)), $.struct_declaration),
+        seq(repeat(field("attribute", $.attribute)), $.interface_declaration),
+        seq(repeat(field("attribute", $.attribute)), $.enum_declaration),
+        $.impl_declaration,
         $.function_declaration,
       ),
 
@@ -82,13 +83,50 @@ module.exports = grammar({
         optional(";"),
       ),
 
-    type_declaration: ($) =>
+    struct_declaration: ($) =>
       seq(
-        "type",
+        "struct",
         field("name", $.identifier),
         optional(field("type_parameters", $.type_parameter_list)),
-        optional($.move),
-        field("value", $.type),
+        "{",
+        optional(commaSep1($.field_declaration)),
+        optional(","),
+        "}",
+        optional(";"),
+      ),
+
+    interface_declaration: ($) =>
+      seq(
+        "interface",
+        field("name", $.identifier),
+        optional(field("type_parameters", $.type_parameter_list)),
+        "{",
+        optional(commaSep1($.interface_method)),
+        optional(","),
+        "}",
+        optional(";"),
+      ),
+
+    enum_declaration: ($) =>
+      seq(
+        "enum",
+        field("name", $.identifier),
+        optional(field("type_parameters", $.type_parameter_list)),
+        "{",
+        optional(commaSep1($.identifier)),
+        optional(","),
+        "}",
+        optional(";"),
+      ),
+
+    impl_declaration: ($) =>
+      seq(
+        "impl",
+        field("target", $.type),
+        "{",
+        repeat($.function_declaration),
+        "}",
+        optional(";"),
       ),
 
     attribute: ($) =>
@@ -119,17 +157,7 @@ module.exports = grammar({
         repeat(field("attribute", $.attribute)),
         optional("unsafe"),
         "fn",
-        choice(
-          field("name", $.identifier),
-          seq(
-            field(
-              "owner",
-              choice($.identifier, $.scoped_identifier, $.generic_type),
-            ),
-            "::",
-            field("name", $.identifier),
-          ),
-        ),
+        field("name", $.identifier),
         optional(field("type_parameters", $.type_parameter_list)),
         field("parameters", $.parameter_list),
         optional(seq("->", field("result", $.type))),
@@ -157,28 +185,18 @@ module.exports = grammar({
     parameter_list: ($) =>
       seq("(", optional(commaSep1($.parameter)), optional(","), ")"),
 
-    parameter: ($) => choice($.self_parameter, $.typed_parameter),
+    parameter: ($) => $.typed_parameter,
 
     typed_parameter: ($) =>
-      seq(
-        optional("comptime"),
-        optional("mut"),
-        field("name", $.identifier),
-        ":",
-        field("type", $.type),
-      ),
-
-    self_parameter: ($) =>
-      seq(
-        optional("comptime"),
-        optional("mut"),
-        choice(
-          "self",
-          seq("self", ":", field("type", $.type)),
-          seq("&", "self"),
-          seq("&", "mut", "self"),
-          seq("*", "self"),
+      choice(
+        seq(
+          optional("comptime"),
+          optional("mut"),
+          field("name", $.identifier),
+          ":",
+          field("type", $.type),
         ),
+        field("type", $.type),
       ),
 
     block: ($) => seq("{", repeat($.statement), "}"),
@@ -344,11 +362,8 @@ module.exports = grammar({
         $.generic_call_expression,
         $.call_expression,
         $.parenthesized_expression,
-        $.bracket_composite_literal,
         $.array_literal,
-        $.composite_literal,
-        $.typed_composite_literal,
-        $.inferred_composite_literal,
+        $.struct_literal,
         $.identifier,
         $.scoped_identifier,
         $.number_literal,
@@ -381,50 +396,20 @@ module.exports = grammar({
     array_literal: ($) =>
       seq("[", optional(commaSep1($.expression)), optional(","), "]"),
 
-    bracket_composite_literal: ($) =>
-      seq(
-        field("type", $.array_type),
-        "{",
-        optional(commaSep1(choice($.named_field_initializer, $.expression))),
-        optional(","),
-        "}",
-      ),
-
-    composite_literal: ($) =>
+    struct_literal: ($) =>
       seq(
         ".",
-        optional(field("type", choice($.generic_type, $.named_type))),
         "{",
-        optional(commaSep1(choice($.named_field_initializer, $.expression))),
+        optional(commaSep1($.named_field_initializer)),
         optional(","),
         "}",
       ),
 
     named_field_initializer: ($) =>
-      seq(".", field("name", $.identifier), "=", field("value", $.expression)),
+      seq(field("name", $.identifier), "=", field("value", $.expression)),
 
     map_entry: ($) =>
       seq(field("key", $.expression), "=>", field("value", $.expression)),
-
-    composite_item: ($) =>
-      choice($.named_field_initializer, $.map_entry, $.expression),
-
-    typed_composite_literal: ($) =>
-      seq(
-        field("type", choice($.map_type, $.generic_type, $.named_type)),
-        "{",
-        optional(commaSep1($.composite_item)),
-        optional(","),
-        "}",
-      ),
-
-    inferred_composite_literal: ($) =>
-      seq(
-        "{",
-        commaSep1($.composite_item),
-        optional(","),
-        "}",
-      ),
 
     call_expression: ($) =>
       prec.left(
@@ -493,9 +478,8 @@ module.exports = grammar({
       prec.right(
         PREC.prefix,
         choice(
-          seq("&", optional("mut"), field("value", $.expression)),
           seq(
-            choice("*", "-", "!", "?", "take", "comptime", "copy"),
+            choice("-", "!", "?", "take", "comptime", "copy"),
             field("value", $.expression),
           ),
         ),
@@ -587,9 +571,7 @@ module.exports = grammar({
         $.error_union_type,
         $.function_type,
         $.optional_type,
-        $.mut_pointer_type,
-        $.const_pointer_type,
-        $.ref_type,
+        $.pointer_type,
         $.approx_type,
         $.variadic_type,
         $.slice_type,
@@ -633,9 +615,7 @@ module.exports = grammar({
       seq("<", optional(commaSep1($.type)), optional(","), ">"),
 
     optional_type: ($) => seq("?", $.type),
-    mut_pointer_type: ($) => seq("*", "mut", $.type),
-    const_pointer_type: ($) => seq("*", "const", $.type),
-    ref_type: ($) => seq("&", optional("mut"), $.type),
+    pointer_type: ($) => seq("^", $.type),
     approx_type: ($) => seq("~", $.type),
     variadic_type: ($) => seq("...", $.type),
     slice_type: ($) => seq("[", "]", field("element", $.type)),
@@ -651,25 +631,23 @@ module.exports = grammar({
         seq(field("error", $.named_type), "!", field("value", $.type)),
       ),
 
-    struct_type: ($) => seq("struct", "{", repeat($.field_declaration), "}"),
+    struct_type: ($) =>
+      seq("struct", "{", optional(commaSep1($.field_declaration)), optional(","), "}"),
     field_declaration: ($) =>
       seq(
         field("name", $.identifier),
         ":",
         field("type", $.type),
-        optional(seq("=", field("value", $.expression))),
-        optional(";"),
       ),
 
     interface_type: ($) =>
-      seq("interface", "{", repeat($.interface_method), "}"),
+      seq("interface", "{", optional(commaSep1($.interface_method)), optional(","), "}"),
     interface_method: ($) =>
       prec.right(
         seq(
           field("name", $.identifier),
           field("parameters", $.parameter_list),
-          optional(seq("->", field("result", $.type))),
-          optional(";"),
+          optional(seq(":", field("result", $.type))),
         ),
       ),
 
@@ -696,7 +674,7 @@ module.exports = grammar({
     none_literal: ($) => "none",
     number_literal: ($) =>
       token(
-        choice(HEX_NUMBER, OCT_NUMBER, BIN_NUMBER, IMAG_NUMBER, FLOAT_NUMBER),
+        choice(HEX_NUMBER, OCT_NUMBER, BIN_NUMBER, DEC_NUMBER, IMAG_NUMBER, FLOAT_NUMBER),
       ),
     string_literal: ($) => token(/"(?:\\.|[^"\\\n])*"/),
     char_literal: ($) => token(/'(?:\\.|[^'\\\n])+'/),
