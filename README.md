@@ -7,21 +7,21 @@ This grammar targets the new Ember syntax in this repo, not the older Ember comp
 ## Current coverage
 
 - imports
-- top-level `const`
-- top-level `constraint`
-- `type` declarations
-- generic type/function declarations with `<T>` and constrained type parameters
-- attached methods with `Type::Method(...)`
+- top-level `let` / `const`
+- `struct`, `interface`, and `enum` declarations
+- `impl T { ... }`
+- plain function declarations
+- generic type/function syntax with `<T>`
 - `let` / `let mut`
-- local `const`
 - `if` / `else`
 - `match`
-- owning pointers, references, raw pointers, optionals, error unions
+- `^T` pointer types and `?T` optionals
 - array literals and indexing
 - postfix `++` / `--`
-- Zig-style `.{ ... }` and typed `.Type{ ... }` literals
+- struct literals: `.{ x = 1, y = 2 }`
+- field access and method calls
 - `comptime` parameters and prefix expressions
-- constraint expressions with `&`, `union`, `interface`, and `~Type`
+- structural `struct` / `interface` / `enum` type expressions
 - `!!`, `??`, `catch`
 
 ## File extension
@@ -33,4 +33,10 @@ The grammar is configured for `.em` files.
 ```bash
 tree-sitter generate
 tree-sitter test
+```
+
+To validate the grammar against the compiler sample file:
+
+```bash
+tree-sitter parse ../EmberCompiler/x_test/struct_runtime.em
 ```

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "ember",
+      "camelcase": "Ember",
+      "scope": "source.ember",
+      "path": ".",
+      "file-types": [
+        "em"
+      ],
+      "highlights": "queries/highlights.scm"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "Tree-sitter grammar for the current Ember language revision",
+    "authors": [
+      {
+        "name": "itsfuad"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/EmberLang/tree-sitter-ember.git"
+    }
+  }
+}

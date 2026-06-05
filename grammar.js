@@ -41,7 +41,6 @@ export default grammar({
     [$.lambda_parameter, $.named_type],
     [$.lambda_parameter, $.type],
     [$.named_type, $.generic_type],
-    [$.type_parameter, $.named_type],
     [$.generic_call_expression, $.binary_expression],
     [$.generic_call_expression, $.prefix_expression, $.binary_expression],
   ],
@@ -163,9 +162,6 @@ export default grammar({
         optional(seq("->", field("result", $.type))),
         choice(field("body", $.block), ";"),
       ),
-
-    test_declaration: ($) =>
-      seq("test", field("name", $.string_literal), field("body", $.block)),
 
     type_parameter_list: ($) =>
       seq("<", commaSep1($.type_parameter), optional(","), ">"),

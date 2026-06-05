@@ -2,6 +2,7 @@
   "name": "tree-sitter-ember",
   "version": "0.1.0",
   "description": "Tree-sitter grammar for the current Ember language revision",
+  "type": "module",
   "main": "bindings/node",
   "types": "bindings/node",
   "keywords": [
